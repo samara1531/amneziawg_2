@@ -30,7 +30,6 @@ endif
 # ARM 32-bit
 ifeq ($(ARCH),arm)
   GOARCH:=arm
-  # ARMv7 → GOARM=7, ARMv6 → GOARM=6 (если нужно различать)
   ifneq (,$(findstring armv7,$(CONFIG_CPU_TYPE)))
     GOARM:=7
   else ifneq (,$(findstring armv6,$(CONFIG_CPU_TYPE)))
@@ -64,7 +63,7 @@ endif
 
 # PowerPC
 ifeq ($(ARCH),powerpc)
-  $(error Go does not support linux/ppc (PowerPC 32-bit). Skipping amneziawg-go build)
+  GOARCH:=ppc
 endif
 ifeq ($(ARCH),powerpc64)
   GOARCH:=ppc64
@@ -84,6 +83,7 @@ define Package/amneziawg-go/description
 AmneziaWG is a fork of WireGuard-Go with DPI-resistance features.
 endef
 
+# === Основная сборка (по умолчанию) ===
 define Build/Compile
 	cd $(PKG_BUILD_DIR) && \
 		GOOS=linux \
@@ -94,6 +94,13 @@ define Build/Compile
 			-ldflags "-X main.Build=$(PKG_VERSION)" \
 			-o $(PKG_BUILD_DIR)/amneziawg-go .
 endef
+
+# === Скип для неподдерживаемых архитектур ===
+ifeq ($(ARCH),powerpc)
+define Build/Compile
+	@echo "Skipping amneziawg-go: unsupported on $(ARCH)"
+endef
+endif
 
 define Package/amneziawg-go/install
 	$(INSTALL_DIR) $(1)/usr/bin
