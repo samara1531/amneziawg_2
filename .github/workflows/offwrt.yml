@@ -17,6 +17,7 @@ jobs:
             target: rockchip
             subtarget: armv8
             vermagic: "--------"
+            GO: /opt/hostedtoolcache/go/1.24.6/x64/bin/go
 
     steps:
       - uses: actions/checkout@v4
