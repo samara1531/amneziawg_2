@@ -19,13 +19,13 @@ jobs:
       - name: Get the latest release from OpenWRT
         id: get_release
         run: |
-          RELEASE_TAG=$(curl -s https://api.github.com/repos/immortalwrt/immortalwrt/tags | jq -r '.[0].name')
+          RELEASE_TAG=$(curl -s https://api.github.com/repos/openwrt/openwrt/tags | jq -r '.[0].name')
           echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
 
       - name: Check if release exists in your repo
         id: check_release
         run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/samara15321/amneziawg-2-immortalwrt/releases/tags/${{ steps.get_release.outputs.release_tag }})
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/samara1531/amneziawg_2/releases/tags/${{ steps.get_release.outputs.release_tag }})
           if [ "$RESPONSE" -eq 200 ]; then
             echo "release_exists=true" >> $GITHUB_OUTPUT
           else
@@ -108,13 +108,13 @@ jobs:
       - name: Create release in your repo
         if: steps.check_release.outputs.release_exists == 'false' && steps.check_metadata.outputs.can_proceed == 'true'
         run: |
-          curl -X POST https://api.github.com/repos/samara15321/amneziawg-2-immortalwrt/releases \
+          curl -X POST https://api.github.com/repos/samara1531/amneziawg_2/releases \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d @- <<EOF
           {
             "tag_name": "${{ steps.get_release.outputs.release_tag }}",
-            "name": "ImmortalWrt ${{ steps.get_release.outputs.release_tag }}",
+            "name": "OpenWrt ${{ steps.get_release.outputs.release_tag }}",
             "body": "A M N E Z I A - W I R E G U A R D 2.0"
           }
           EOF
@@ -122,6 +122,6 @@ jobs:
   run-build:
     needs: sync-releases
     if: needs.sync-releases.outputs.can_proceed == 'true'
-    uses: samara15321/amneziawg-2-immortalwrt/.github/workflows/auto_build.yml@master
+    uses: samara1531/amneziawg_2/.github/workflows/auto_build.yml@master
     with:
       tag_name: ${{ needs.sync-releases.outputs.release_tag }}
