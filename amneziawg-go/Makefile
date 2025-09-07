@@ -64,7 +64,7 @@ endif
 
 # PowerPC
 ifeq ($(ARCH),powerpc)
-  GOARCH:=ppc
+  $(error Go does not support linux/ppc (PowerPC 32-bit). Skipping amneziawg-go build)
 endif
 ifeq ($(ARCH),powerpc64)
   GOARCH:=ppc64
