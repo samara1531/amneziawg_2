@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: immortalwrt/immortalwrt
+          repository: openwrt/openwrt
           ref: v${{ matrix.build_env.tag }}
           fetch-depth: 0
 
@@ -54,7 +54,7 @@ jobs:
         id: check-file
         run: |
           postfix="v${{ matrix.build_env.tag }}_${{ matrix.build_env.pkgarch}}_${{ matrix.build_env.target}}_${{ matrix.build_env.subtarget}}"
-          FILE_URL="https://github.com/samara15321/amneziawg-2-immortalwrt/releases/download/${{ inputs.tag_name }}/kmod-amneziawg_${postfix}.ipk"
+          FILE_URL="https://github.com/samara1531/amneziawg_2/releases/download/${{ inputs.tag_name }}/kmod-amneziawg_${postfix}.ipk"
 
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           if curl -H "Authorization: token $GITHUB_TOKEN" --output /dev/null --silent --head --fail "$FILE_URL"; then
@@ -95,12 +95,12 @@ jobs:
           echo "pkgarch: ${{ matrix.build_env.pkgarch}}, target:${{ matrix.build_env.target}}, subtarget: ${{ matrix.build_env.subtarget}}"
 
           # Setup & install feeds
-          wget https://raw.githubusercontent.com/immortalwrt/immortalwrt/v${{ matrix.build_env.tag }}/feeds.conf.default -O feeds.conf
-          echo "src-git awgopenwrt https://github.com/samara15321/-amneziawg-2-immortalwrt.git" >> ./feeds.conf
+          wget https://raw.githubusercontent.com/openwrt/openwrt/v${{ matrix.build_env.tag }}/feeds.conf.default -O feeds.conf
+          echo "src-git awgopenwrt https://github.com/samara1531/amneziawg_2.git" >> ./feeds.conf
           ./scripts/feeds update && ./scripts/feeds install -a
 
           # Setup config with AWG and dependencies
-          wget https://downloads.immortalwrt.org/releases/${{ matrix.build_env.tag }}/targets/${{ matrix.build_env.target}}/${{ matrix.build_env.subtarget}}/config.buildinfo -O .config
+          wget https://downloads.openwrt.org/releases/${{ matrix.build_env.tag }}/targets/${{ matrix.build_env.target}}/${{ matrix.build_env.subtarget}}/config.buildinfo -O .config
           echo "CONFIG_PACKAGE_amneziawg-go=y" >> .config
           echo "CONFIG_PACKAGE_amneziawg-tools=y" >> .config
           echo "CONFIG_PACKAGE_luci-proto-amneziawg=y" >> .config
