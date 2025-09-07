@@ -132,13 +132,19 @@ jobs:
             echo "VERMAGIC_MISMATCH=false" >> $GITHUB_ENV
           fi
 
-      - name: Build AmneziaWG packages      
-        if: ${{ env.FILE_EXISTS == 'false' && env.VERMAGIC_MISMATCH != 'true' }}
+      - name: Build AmneziaWG packages
         env:
           GO: /opt/hostedtoolcache/go/1.24.6/x64/bin/go
         run: |
-          # AmneziaWG core (Go)
-          make package/amneziawg-go/{clean,download,prepare,compile} V=s
+          case "$ARCH" in
+            powerpc)
+              echo "Skipping amneziawg-go: unsupported GOARCH for 32-bit PowerPC"
+              ;;
+            *)
+              # AmneziaWG core (Go) только для поддерживаемых архитектур
+              make package/amneziawg-go/{clean,download,prepare,compile} V=s
+              ;;
+          esac
 
           # kmod-amneziawg
           make package/kmod-amneziawg/{clean,download,prepare,compile} V=s
