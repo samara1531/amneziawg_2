@@ -12,7 +12,7 @@ if (version) {
   process.exit(1);
 }
 
-const url = `https://downloads.immortalwrt.org/releases/${version}/targets/`;
+const url = `https://downloads.openwrt.org/releases/${version}/targets/`;
 
 async function fetchHTML(url) {
   try {
