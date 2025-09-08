@@ -60,10 +60,15 @@ ifeq ($(ARCH),riscv64)
   GOARCH:=riscv64
 endif
 
+# LoongArch
+ifeq ($(ARCH),loongarch64)
+  GOARCH:=unsupported
+endif
 # PowerPC
 ifeq ($(ARCH),powerpc)
   GOARCH:=unsupported
 endif
+
 ifeq ($(ARCH),powerpc64)
   GOARCH:=ppc64
 endif
