@@ -239,7 +239,7 @@ proto_amneziawg_setup() {
 	else
 		logger -t "amneziawg" "info: using user-space amneziawg-go (AWG binary: ${AWG})"
 	    rm -f "/var/run/amneziawg/${config}.sock"
-	    /usr/bin/amneziawg-go "${config}" &
+	    /usr/bin/amneziawg-go "${config}" >> /var/log/amneziawg.log 2>&1 &
 	    for i in $(seq 1 20); do
 	        [ -S "/var/run/amneziawg/${config}.sock" ] && break
 	        sleep 2
