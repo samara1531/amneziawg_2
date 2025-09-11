@@ -14,14 +14,7 @@ PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_FLAGS:=no-mips16
 
-# Название Go-пакета
 GO_PKG:=github.com/amnezia-vpn/amneziawg-go
-
-# Линковочные флаги без -s -w
-GO_PKG_LDFLAGS_X:=main.Build=$(PKG_VERSION)
-
-# Отключаем strip
-GO_PKG_NO_STRIP:=1
 
 # Отключаем сборку под неподдерживаемые архитектуры
 ifeq ($(ARCH),loongarch64)
@@ -53,7 +46,7 @@ endef
 define Package/amneziawg-go/description
   AmneziaWG is a contemporary version of the WireGuard protocol. It's a fork of
   WireGuard-Go and offers protection against detection by Deep Packet Inspection
-  (DPI) systems. At the same time, it retains the simplified архитектуру и
+  (DPI) systems. At the same time, it retains the simplified architecture and
   high performance of the original.
 endef
 
@@ -62,7 +55,18 @@ define Build/Compile
 endef
 
 define Package/amneziawg-go/install
-	$(call GoPackage/Package/Install/Bin,$(PKG_INSTALL_DIR))
+	# создаём папки
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/usr/libexec
+
+	# ставим настоящий бинарь в /usr/libexec
+	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/amneziawg-go $(1)/usr/libexec/amneziawg-go.bin
+
+	# создаём обёртку-скрипт в /usr/bin
+	$(INSTALL_BIN) -m 0755 /dev/stdin $(1)/usr/bin/amneziawg-go <<EOF
+#!/bin/sh
+exec /usr/libexec/amneziawg-go.bin "\$$@"
+EOF
 endef
 
 $(eval $(call BuildPackage,amneziawg-go))
