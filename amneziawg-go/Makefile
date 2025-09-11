@@ -16,23 +16,6 @@ PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/amnezia-vpn/amneziawg-go
 
-# Отключаем сборку под неподдерживаемые архитектуры
-ifeq ($(ARCH),loongarch64)
-  PKG_ARCH:=no
-endif
-
-ifeq ($(ARCH),powerpc)
-  PKG_ARCH:=no
-endif
-
-ifeq ($(ARCH),armeb_xscale)
-  PKG_ARCH:=no
-endif
-
-ifeq ($(ARCH),mips64_octeonplus)
-  PKG_ARCH:=no
-endif
-
 include $(INCLUDE_DIR)/package.mk
 include ../../packages/lang/golang/golang-package.mk
 
@@ -63,10 +46,9 @@ define Package/amneziawg-go/install
 	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/amneziawg-go $(1)/usr/libexec/amneziawg-go.bin
 
 	# создаём обёртку-скрипт в /usr/bin
-	$(INSTALL_BIN) -m 0755 /dev/stdin $(1)/usr/bin/amneziawg-go <<EOF
-#!/bin/sh
-exec /usr/libexec/amneziawg-go.bin "\$$@"
-EOF
+	echo '#!/bin/sh' > $(1)/usr/bin/amneziawg-go
+	echo 'exec /usr/libexec/amneziawg-go.bin "$$@"' >> $(1)/usr/bin/amneziawg-go
+	chmod 0755 $(1)/usr/bin/amneziawg-go
 endef
 
 $(eval $(call BuildPackage,amneziawg-go))
