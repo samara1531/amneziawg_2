@@ -1,121 +1,68 @@
+# This is free software, licensed under the MIT License.
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=amneziawg-go
 PKG_VERSION:=1.0.20250813
 PKG_RELEASE:=1
 
-GO ?= go
-
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/amnezia-vpn/amneziawg-go.git
-# Version: v0.2.14-beta-awg-1.5-1
 PKG_SOURCE_VERSION:=15d7259cd45f41d50bc5838dc002698362f29a2d
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DEPENDS:=golang/host
+PKG_BUILD_PARALLEL:=1
+PKG_BUILD_FLAGS:=no-mips16
 
-include $(INCLUDE_DIR)/package.mk
+# Название Go-пакета
+GO_PKG:=github.com/amnezia-vpn/amneziawg-go
 
-# === Маппинг архитектур OpenWrt → GOARCH/GOARM ===
-GOARCH:=$(ARCH)
-GOARM:=
+# Линковочные флаги без -s -w
+GO_PKG_LDFLAGS_X:=main.Build=$(PKG_VERSION)
 
-# x86
-ifeq ($(ARCH),i386)
-  GOARCH:=386
-endif
-ifeq ($(ARCH),x86_64)
-  GOARCH:=amd64
-endif
+# Отключаем strip
+GO_PKG_NO_STRIP:=1
 
-# ARM 32-bit
-ifeq ($(ARCH),arm)
-  GOARCH:=arm
-  ifneq (,$(findstring armv7,$(CONFIG_CPU_TYPE)))
-    GOARM:=7
-  else ifneq (,$(findstring armv6,$(CONFIG_CPU_TYPE)))
-    GOARM:=6
-  endif
-endif
-
-# ARM 64-bit
-ifeq ($(ARCH),aarch64)
-  GOARCH:=arm64
-endif
-
-# MIPS
-ifeq ($(ARCH),mips)
-  GOARCH:=mips
-endif
-ifeq ($(ARCH),mipsel)
-  GOARCH:=mipsle
-endif
-ifeq ($(ARCH),mips64)
-  GOARCH:=mips64
-endif
-ifeq ($(ARCH),mips64el)
-  GOARCH:=mips64le
-endif
-
-# RISC-V
-ifeq ($(ARCH),riscv64)
-  GOARCH:=riscv64
-endif
-
-ifeq ($(ARCH),powerpc64)
-  GOARCH:=ppc64
-endif
-ifeq ($(ARCH),powerpc64le)
-  GOARCH:=ppc64le
-endif
-
-# LoongArch
+# Отключаем сборку под неподдерживаемые архитектуры
 ifeq ($(ARCH),loongarch64)
-  GOARCH:=unsupported
+  PKG_ARCH:=no
 endif
 
-# PowerPC
 ifeq ($(ARCH),powerpc)
-  GOARCH:=unsupported
-
+  PKG_ARCH:=no
 endif
-# armeb_xscale
+
 ifeq ($(ARCH),armeb_xscale)
-  GOARCH:=unsupported
+  PKG_ARCH:=no
 endif
 
 ifeq ($(ARCH),mips64_octeonplus)
-  GOARCH:=unsupported
+  PKG_ARCH:=no
 endif
+
+include $(INCLUDE_DIR)/package.mk
+include ../../packages/lang/golang/golang-package.mk
 
 define Package/amneziawg-go
   SECTION:=net
   CATEGORY:=Network
-  TITLE:=AmneziaWG userspace implementation (Go)
-  DEPENDS:=+kmod-tun
+  TITLE:=AmneziaWG userspace implementation program (written in Go)
+  DEPENDS:=$(GO_ARCH_DEPENDS) +kmod-tun
 endef
 
 define Package/amneziawg-go/description
-AmneziaWG is a fork of WireGuard-Go with DPI-resistance features.
+  AmneziaWG is a contemporary version of the WireGuard protocol. It's a fork of
+  WireGuard-Go and offers protection against detection by Deep Packet Inspection
+  (DPI) systems. At the same time, it retains the simplified архитектуру и
+  high performance of the original.
 endef
 
 define Build/Compile
-$(if $(filter unsupported,$(GOARCH)), \
-	@echo "Skipping build: amneziawg-go not supported on $(ARCH)", \
-	cd $(PKG_BUILD_DIR) && \
-	GOOS=linux \
-	GOARCH=$(GOARCH) \
-	$(if $(GOARM),GOARM=$(GOARM)) \
-	CGO_ENABLED=0 \
-	$(GO) build -v -trimpath -ldflags "-X main.Build=$(PKG_VERSION)" -o $(PKG_BUILD_DIR)/amneziawg-go . \
-)
+	$(call GoPackage/Build/Compile)
 endef
 
 define Package/amneziawg-go/install
-$(if $(filter unsupported,$(GOARCH)), \
-	@echo "Skipping install: amneziawg-go not built on $(ARCH)", \
-	$(INSTALL_DIR) $(1)/usr/bin; \
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/amneziawg-go $(1)/usr/bin/amneziawg-go \
-)
+	$(call GoPackage/Package/Install/Bin,$(PKG_INSTALL_DIR))
 endef
 
 $(eval $(call BuildPackage,amneziawg-go))
